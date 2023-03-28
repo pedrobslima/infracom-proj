@@ -1,7 +1,8 @@
-file = open("infracom\cardapio.txt", "r")
+import os
+file = open("servidor\cardapio.txt", "r")
 
-file.read(20)
+x = os.stat("servidor\cardapio.txt").st_size
 
-print(file.read(30))
+print(f"{x} bytes")
 
 file.close()
