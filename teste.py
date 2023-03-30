@@ -13,10 +13,12 @@ udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp.bind(("localhost", 5000))
 
 class StandBy(State):
-    def __init__(self, udpSocket):
+    def __init__(self, udpSocket: socket.socket):
         self.name = "Stand By"
+        self.udpSocket = udpSocket # < isso causa algum tipo de problema?
 
     def enter(self):
+        print("Servidor: Stand by") # < apenas pra teste, tirar dps
         pass
 
     def execute(self, inpt1, inpt2):
@@ -25,13 +27,20 @@ class StandBy(State):
 
     def exit(self):
         #udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        pass
+        self.udpSocket.sendto('Digite seu ID')
+        cliente_id, clientADDR = self.udpSocket.recvfrom(1024)
+        self.udpSocket.sendto('Digite sua mesa')
+        cliente_mesa, clientADDR = self.udpSocket.recvfrom(1024)
+        # Agoria teria a abertura do arquivo JSON 
+        # e a adição do nova pessoa na mesa requisitada 
+        # usando os dados que foram coletados
 
 class WithClient(State):
-    def __init__(self, udpSocket):
+    def __init__(self, udpSocket: socket.socket):
         self.name = "With Client"
 
     def enter(self):
+        print("Servidor: On") # < apenas pra teste, tirar dps
         pass
 
     def execute(self, inpt1, inpt2):
@@ -51,11 +60,13 @@ class WithClient(State):
             pass
 
     def exit(self):
+        # Aqui teria a remoção do cliente da tabela de mesas,
+        # mas como fazer isso? Preciso dos dados do cliente...
         pass
 
 
 class DuoStateMachine():
-    def __init__(self, mySocket):
+    def __init__(self, mySocket: socket.socket):
         self.stateZero = StandBy(mySocket)
         self.stateOne = WithClient(mySocket)
         self.currState = self.stateZero
@@ -70,7 +81,10 @@ class DuoStateMachine():
         self.currState.enter()
 
     def run(self, data, src):
-        self.currState(data, src)
+        self.currState.execute(data, src) 
+        # usar condicional aqui para já ordenar a transição de estado?
+        # return cond = self.currState.execute(data, src)
+        # if(cond): self.transition()?
         pass
 
 # ========= PARA TESTES ===============

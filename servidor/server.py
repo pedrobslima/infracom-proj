@@ -3,19 +3,13 @@ from math import ceil
 import os
 import time # vai usar para dar os waits(talvez) e para pegar a hora atual
 import json
-from statemachine import State, StateMachine
+#from statemachine import State, StateMachine
 
 HOST = "localhost"  # < endereço IP do servidor (127.0.0.1 é o padrão)
 PORT = 5000         # < porta do servidor
 orgn = (HOST, PORT) # < vai servir para associar essa máquina ao cliente
 #dest = ("localhost", 3000) 
 # ^ dps tem que tirar
-
-class Server(StateMachine):
-    
-    # Estados
-    StandBy = State('estadoZero', initial = True)
-    WithClient = State('estadoUm')
 
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp.bind(orgn)
