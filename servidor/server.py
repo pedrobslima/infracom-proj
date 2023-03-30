@@ -38,6 +38,12 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
     #unpacking header
     header_udp = x[:16] #metade só de header
     dados = x[16:] #metade só de dados
+    header_udp = struct.unpack("!IIII", header_udp) #unpack é feito no header, é returnada uma tupla os 4 campos nós damos, então
+    checksum_correto = header_udp[3] #pegamos o 3 (4o), o checksum, para mapear a checksum correta
+
+    checksum = checksum_calculator(dados) ##passamos a metade de lá de dados pelo mesmo calculador de checksum
+    is_data_corrupted = checksum_correto != checksum ##pois assim podemos definitivamente comparar o checksum que entrou e saiu
+    print("Data Corruption status: " + is_data_corrupted) #aqui por motivos de teste
 
     dados, clientADDR = x # < tamanho do buffer é de 1024 bytes
     print(clientADDR, dados.decode()) # < o .decode() transforma o arquivo em bits em string
