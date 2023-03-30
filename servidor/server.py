@@ -2,13 +2,25 @@ import socket
 from math import ceil
 import os
 import time # vai usar para dar os waits(talvez) e para pegar a hora atual
+import zlib # vai usar para o checksum
+import struct# vai usar para o header em si do UDP 
 
+def checksum_calculator(data):
+    checksum = zlib.crc32(data)
+    return checksum
 
 HOST = "localhost"  # < endereço IP do servidor (127.0.0.1 é o padrão)
 PORT = 5000         # < porta do servidor
 orgn = (HOST, PORT) # < vai servir para associar essa máquina ao cliente
 #dest = ("localhost", 3000) 
 # ^ dps tem que tirar
+porta_origem = 1111
+porta_dest = 1112
+comprimento = len(msg.encode())
+checksum = checksum_calculator(msg.encode())
+header_udp = struct.pack("!IIII", porta_origem, porta_dest, comprimento, checksum)
+
+
 
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp.bind(orgn)
@@ -22,6 +34,11 @@ dados = ''
 while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida paga (ou talvez quando o número de cliente for 0?)
     x = udp.recvfrom(1024)
     print(x)
+
+    #unpacking header
+    header_udp = x[:16] #metade só de header
+    dados = x[16:] #metade só de dados
+
     dados, clientADDR = x # < tamanho do buffer é de 1024 bytes
     print(clientADDR, dados.decode()) # < o .decode() transforma o arquivo em bits em string
     # [adicionar condicional para saber se o clientADDR é do socket atual ou não]
