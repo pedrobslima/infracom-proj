@@ -53,13 +53,17 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
         fileSize = os.stat("servidor//bigFile_teste.txt").st_size
         print(f"Size: {fileSize} bytes")
         # v definindo o número de pacotes que deverão ser enviados
-        num_pkts = ceil(fileSize/1024)
+        num_pkts = ceil(fileSize/1016)
         # v abrindo arquivo escolhido
         #file = open("servidor\cardapio.txt", "rb") # < mudar o nome da variável para 'cardapio' msm?
         file = open("servidor//bigFile_teste.txt", "rb")
         for i in range(num_pkts): # loop para envio de pacotes
             udp.sendto((str(i)).encode(), clientADDR) # < usado só para testes, diz qual o nº do pacote 
-            udp.sendto(file.read(1024), clientADDR)   
+            data_bruto = map(bin,bytearray(file.read(1016)))
+            data_msg = "".join(data_bruto)
+
+            send_msg = data_msg
+            udp.sendto(send_msg, clientADDR)   
             # ^ ao usar o método .read(), a própria posição do cursor no arquivo 
             # mudará automaticamente para a posição pertencente ao 1025º byte
             # e assim segue, de 1024 bytes por 1024 bytes
