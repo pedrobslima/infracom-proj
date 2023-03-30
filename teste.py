@@ -26,11 +26,11 @@ class StandBy(State):
             return True # testando
 
     def exit(self):
-        #udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.udpSocket.sendto('Digite seu ID')
-        cliente_id, clientADDR = self.udpSocket.recvfrom(1024)
-        self.udpSocket.sendto('Digite sua mesa')
-        cliente_mesa, clientADDR = self.udpSocket.recvfrom(1024)
+        pass
+        #self.udpSocket.sendto('Digite seu ID')
+        #cliente_id, clientADDR = self.udpSocket.recvfrom(1024)
+        #self.udpSocket.sendto('Digite sua mesa')
+        #cliente_mesa, clientADDR = self.udpSocket.recvfrom(1024)
         # Agoria teria a abertura do arquivo JSON 
         # e a adição do nova pessoa na mesa requisitada 
         # usando os dados que foram coletados
