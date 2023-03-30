@@ -2,8 +2,7 @@ import socket
 from math import ceil
 import os
 import time # vai usar para dar os waits(talvez) e para pegar a hora atual
-import json
-#from statemachine import State, StateMachine
+
 
 HOST = "localhost"  # < endereço IP do servidor (127.0.0.1 é o padrão)
 PORT = 5000         # < porta do servidor
@@ -18,33 +17,23 @@ udp.bind(orgn)
 print("Servidor: Stand by\n")
 
 dados = ''
-# ESTADO 0 (fazer os estados usando funções?)
-#def Standby():
-while(dados.decode().capitalize() != "Chefia"):
-    dados, clientADDR = udp.recvfrom(1024)
-    if(dados.decode().capitalize() == "Chefia"):
-        udp.sendto('Digite seu ID')
-        cliente_id, clientADDR = udp.recvfrom(1024)
-        udp.sendto('Digite sua mesa')
-        cliente_mesa, clientADDR = udp.recvfrom(1024)
-        # [agora aqui precisaria adicionar as info coletadas no arquivo json]
-        print("Servidor: On\n")
-
-# ESTADO 1 (fazer os estados usando funções?)
-#def Main():
+# Cada mensagem na vdd deverá ter 8128bits, ou seja, 1016 bytes
+# por isso as partes retiradas do arquivo deverão ser de 1016 bytes
 while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida paga (ou talvez quando o número de cliente for 0?)
-    dados, clientADDR = udp.recvfrom(1024) # < tamanho do buffer é de 1024 bytes
+    x = udp.recvfrom(1024)
+    print(x)
+    dados, clientADDR = x # < tamanho do buffer é de 1024 bytes
     print(clientADDR, dados.decode()) # < o .decode() transforma o arquivo em bits em string
     # [adicionar condicional para saber se o clientADDR é do socket atual ou não]
     if(dados.decode() == "1" or dados.decode().capitalize() == "Cardárpio"):
         # v método para achar o tamanho em bytes do arquivo
-        fileSize = os.stat("servidor\cardapio.txt").st_size
+        fileSize = os.stat("servidor//bigFile_teste.txt").st_size
         print(f"Size: {fileSize} bytes")
         # v definindo o número de pacotes que deverão ser enviados
         num_pkts = ceil(fileSize/1024)
         # v abrindo arquivo escolhido
-        file = open("servidor\cardapio.txt", "rb") # < mudar o nome da variável para 'cardapio' msm?
-        #file = open("servidor\bigFile_teste.txt", "rb")
+        #file = open("servidor\cardapio.txt", "rb") # < mudar o nome da variável para 'cardapio' msm?
+        file = open("servidor//bigFile_teste.txt", "rb")
         for i in range(num_pkts): # loop para envio de pacotes
             udp.sendto((str(i)).encode(), clientADDR) # < usado só para testes, diz qual o nº do pacote 
             udp.sendto(file.read(1024), clientADDR)   
