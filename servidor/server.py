@@ -2,7 +2,12 @@ import socket
 from math import ceil
 import os
 import time # vai usar para dar os waits(talvez) e para pegar a hora atual
+import struct # usado para fazer o header UDP
+import zlib # usado no calculo do checksum
 
+def check_calc(dados): #def calcula o checksum de uma dada variavel
+    checksum = zlib.crc32(dados)
+    return checksum
 
 HOST = "localhost"  # < endereço IP do servidor (127.0.0.1 é o padrão)
 PORT = 5000         # < porta do servidor
@@ -22,7 +27,17 @@ dados = ''
 while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida paga (ou talvez quando o número de cliente for 0?)
     x = udp.recvfrom(1024)
     print(x)
-    dados, clientADDR = x # < tamanho do buffer é de 1024 bytes
+    pacote_completo, clientADDR = x # < tamanho do buffer é de 1024 bytes
+
+    header_udp = pacote_completo[:16] #primeira metade do pacote é dedicado ao header
+    dados = pacote_completo[16:] #segunda metade, aos dados em si
+
+    header_udp = struct.unpack("!IIII", header_udp) #damos unpack nessa primeira metade do pacote, o header, para dividir nos 4 pedaços que a compo~e
+    check_correto = header_udp[3] #nessa tupla, o checksum tem quarto lugar
+
+    checksum = check_calc(dados)#vamos fazer outro checksum, para comparar com o que era para ser correto
+    is_corrupt = check_correto != checksum
+
     print(clientADDR, dados.decode()) # < o .decode() transforma o arquivo em bits em string
     # [adicionar condicional para saber se o clientADDR é do socket atual ou não]
     if(dados.decode() == "1" or dados.decode().capitalize() == "Cardárpio"):
@@ -42,6 +57,8 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
             # e assim segue, de 1024 bytes por 1024 bytes
             # Obs.: Se você pedir para o código ler uma quant de bytes 
             # maior do que resta, não vai dar erro nenhum
+
+        print("Corruption Status: ", is_corrupt)
         udp.sendto('file end'.encode(), clientADDR)
         # ^ é correto usar isso para sinalizar que o arquivo chegou ao seu fim?
         file.close() # < fechando arquivo
