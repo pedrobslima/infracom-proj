@@ -42,7 +42,8 @@ while(msg != '\x18'):
             dados, serverADDR = udp.recvfrom(1024)
             print(f"[CINtofome]: {dados.decode()}")
             msg = input("[Cliente]: ")
-            udp.sendto(msg.encode(), dest)
+            headed_msg = header_udp + (msg.encode())
+            udp.sendto(header_udp, dest)
     if(msg == "1" or msg.capitalize() == "Cardárpio"):
         file = open("cliente//bigFile_teste.txt", "w")
         while(not(fileEnd)):
@@ -50,7 +51,7 @@ while(msg != '\x18'):
             if(num_pkt != b'file end'):
                 print("Pacote nº: ", num_pkt.decode())
                 dados, serverADDR = udp.recvfrom(1024)
-                dados = dados.decode().replace("\n", "")
+                dados = dados.decode()
                 file.write(dados)
                 print(dados)
             else:
