@@ -14,14 +14,13 @@ PORT = 5000         # < porta do servidor
 orgn = (HOST, PORT) # < vai servir para associar essa máquina ao cliente
 #dest = ("localhost", 3000) 
 # ^ dps tem que tirar
-porta_origem = 1111
-porta_dest = 1112
+DEST_PORT = 3000
 comprimento = len(msg.encode())
 checksum = checksum_calculator(msg.encode())
-header_udp = struct.pack("!IIII", porta_origem, porta_dest, comprimento, checksum)
+header_udp = struct.pack("!IIII", PORT, DEST_PORT, comprimento, checksum)
 
 
-
+#"C:\Users\pedro\Documents\NOVOdeltadelta\pog\infrasoft\infracom-proj\minosweep.jpg"
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp.bind(orgn)
 # Ainda tecnicamente precisa fazer os passos iniciais da criação
