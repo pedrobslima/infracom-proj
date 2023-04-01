@@ -3,7 +3,7 @@ from math import ceil
 import zlib
 import struct
 
-def checksum_calculator(data):
+'''def checksum_calculator(data):
     checksum = zlib.crc32(data)
     return checksum
 
@@ -87,5 +87,13 @@ print(y)
 #send_msg = send_msg.replace("b", "0")
 print(send_msg)
 print(y == send_msg)
+bytearray(b'Abc')
+file.close()'''
 
-file.close()
+
+byte_array = bytearray(b'Abc')
+byte_string = byte_array.decode()
+print(byte_array)
+print(byte_array.decode())
+print(byte_string.encode())
+
