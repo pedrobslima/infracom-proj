@@ -1,5 +1,7 @@
 import socket
-import time # vai usar para dar os waits(talvez) e para pegar a hora atual
+from math import ceil
+import os
+from funcoes import *
 
 # Para começar a fazer os testes, precisa 1o criar um novo terminal,
 # e depois precisa clicar naquele simbolozinho de duas janelas na aba do terminal
@@ -11,37 +13,59 @@ dest = (DEST_HOST, DEST_PORT)
 ORGN_HOST = "localhost"  # < endereço IP do cliente (127.0.0.1 é o padrão)
 ORGN_PORT = 3000         # < porta do cliente
 orgn = (ORGN_HOST, ORGN_PORT)
-#info = ORGN_HOST + ' ' + str(ORGN_PORT)
 
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp.bind(orgn)
 
 print("Cliente: On\nPara sair use CTRL+X\n")
+print('Formato do nome: "nome"."tipo"\n\tExp.: nome_imagem.jpg\n')
 
-msg = ''
-while(msg != '\x18'):
-    msg = input("[Cliente]: ") # < ação que o cliente deseja fazer
-    udp.sendto(msg.encode(), dest) # < o .encode() transforma a string em um arquivo em bits
-    fileEnd = False # < indicará quando o arquivo terminou para parar o loop de recebimento
-    if(msg.capitalize() == "Chefia"):
-        for i in range(2): 
-            dados, serverADDR = udp.recvfrom(1024)
-            print(f"[CINtofome]: {dados.decode()}")
-            msg = input("[Cliente]: ")
-            udp.sendto(msg.encode(), dest)
-    if(msg == "1" or msg.capitalize() == "Cardárpio"):
-        file = open("cliente//bigFile_teste.txt", "w")
-        while(not(fileEnd)):
-            num_pkt, serverADDR = udp.recvfrom(1024)
-            if(num_pkt != b'file end'):
-                print("Pacote nº: ", num_pkt.decode())
-                dados, serverADDR = udp.recvfrom(1024)
-                dados = dados.decode().replace("\n", "")
-                file.write(dados)
-                print(dados)
+while True:
+    file_name = input("[Cliente]: ") # < qual o nome.tipo do arquivo pra ser enviado
+    
+    if(file_name == '\x18'):
+        udp.sendto(file_name.encode(), dest)
+        break
+    
+    try:
+        # ENVIAR
+        file = open(f"cliente//{file_name}", "rb")
+        fileSize = os.stat(f"cliente//{file_name}").st_size 
+        # ^ quantidade de bytes do arquivo
+        num_pkts = ceil(fileSize/1024) # < o número de pacotes em q o arquivo será enviado, sem contar com a inicial
+        
+        for i in range(num_pkts+1):
+            if(i == 0):
+                msg = (num_in_dec_num_bin_in_bin(num_pkts, "decimal") + file_name).encode()
+                print('[Enviando pacote introdutório]')
             else:
-                fileEnd = True
+                msg = file.read(1024)
+                print(f'[Enviando pacote {i}/{num_pkts}]')
+            
+            udp.sendto(msg, dest) 
         file.close()
+
+        # RECEBER E ARMAZENAR
+        print('''_______________________________________
+[ENVIO DE ARQUIVO: COMPLETO]
+...
+[AGUARDANDO RESPOSTA DO SERVIDOR...]
+_______________________________________''')
+
+        file_name = "copia_de_" + file_name
+        copyFile = open(f"cliente//{file_name}", "wb")
+        for i in range(num_pkts):
+            dados, serverADDR = udp.recvfrom(1024)
+            print(f'[Recebido pacote {i+1}/{num_pkts}]')
+            copyFile.write(dados)
+
+        copyFile.close()
+        print(f'''_______________________________________
+[RECEBIMENTO DE ARQUIVO: COMPLETO]
+[CÓPIA DE ARQUIVO: COMPLETA]
+_______________________________________''')
+    except(FileNotFoundError or PermissionError):
+        print("[ARQUIVO NÃO EXISTE]")
 
 print("\nCliente: Off\n")
 udp.close()
