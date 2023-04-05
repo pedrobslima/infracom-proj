@@ -8,4 +8,4 @@
 
 - A pasta do cliente, no início, possui 3 arquivos que poderão ser usados como teste para a transferência, além de ser a pasta em que as cópias dos arquivos, vindas do servidor, serão armazenadas
 
-- Se quiser testar alguma coisa em python sem comprometer oq já tá feito em server.py ou em client.py, usa o arquivo teste.py ou cria um novo .py pra teste
+- funcoes.py atualmente só armazena umas funções que usa binário, depois pode mudar o nome ou tirar elas
