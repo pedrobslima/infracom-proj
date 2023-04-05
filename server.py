@@ -37,7 +37,7 @@ _______________________________________''')
     recvFile = open(f"servidor//{file_name}", "rb")
     for i in range(num_pkts):
         msg = recvFile.read(1024)
-        print(f'[Enviando pacote {i}/{num_pkts}]')
+        print(f'[Enviando pacote {i+1}/{num_pkts}]')
 
         udp.sendto(msg, clientADDR) 
     recvFile.close()
