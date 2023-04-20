@@ -1,0 +1,2 @@
+Como essa pasta estava vazia quando foi feito o commit de sua criação, ela acabou não sendo incluída na entrega, mesmo sendo necessária para a execução da comunicação, estando no computador usado para testar.
+Esse arquivo foi incluso dentro da pasta agora, com o intúito de poder adicionar ele pelo Github. Só agora na entrega 2 percebemos esse erro no envio, então pedimos perdão.
