@@ -60,19 +60,17 @@ while True:
         # SEND PACKET:
         if(count == -1):
             msg = (num_in_dec_num_bin_in_bin(num_pkts, "decimal") + file_name).encode()
+            checksum = str(checksum_calculador(msg) & 0xFFFF)
             print('[Enviando pacote introdutório]')
-        elif(count > -1 and count < 2):
-            checksum = checksum_calculador(file)
         else:
-            msg = file.read(1023)
+            msg = file.read(1021)
+            checksum = str(checksum_calculador(msg) & 0xFFFF)
             print(f'[Enviado pacote {count+1}/{num_pkts}]')
         #msg = '0'.encode() + data + checksum.encode()
         #^[1024] ^[- de 1]      ^[~1008]    ^[16]
         
-        udp.sendto(num_seq.encode()+msg, dest)
+        udp.sendto(num_seq.encode()+checksum.encode()+msg, dest)
         count += 1
-        checksum = checksum_calculador(num_seq.encode()+msg)
-        print("olá bom dia, o checksum é", checksum)
 
         # WAIT ACK:
         ACK_rcvd = False
