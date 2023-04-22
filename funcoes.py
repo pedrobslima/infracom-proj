@@ -19,3 +19,18 @@ def num_in_dec_num_bin_in_bin(x: int, oq_x_mede: str): # < working title
         else:
             soma = soma + '0'
     return soma # num binario de 16bits
+
+def isntCorrupt(recvPkt):
+    _, data, recv_checksum = recvPkt.split() # < temporário, só para representar oq é pra fazer
+    checksum: str
+    #checksum = calculateChcksum(data)
+    return checksum == recv_checksum
+
+def isACK(recvPkt, ACK: int):
+    recv_ACK = int(recvPkt.split()[0]) # < temporário, só para representar oq é pra fazer
+    return ACK == recv_ACK
+
+def invertACK(current: str):
+    if(current == '0'):
+        return '1'
+    return '0'
