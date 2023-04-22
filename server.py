@@ -29,28 +29,26 @@ while True:
     recvFile = open(f"servidor//{file_name}", "wb")
     
     count = 0
-    expctd_pkt_num: int
+    num_seq = '0'
 
     receiving = True
     while(receiving):# [LOOP DE RECEBIMENTO]
         # deveria adicionar condição para verificar 
         # se o endereço do cliente é o mesmo do pacote inicial?
-        dadosBruto, clientADDR = udp.recvfrom(1024)
-        if(count == 0):
-            expctd_pkt_num = dadosBruto.split()[0]
-        if(isACK(dadosBruto, expctd_pkt_num) and isntCorrupt(dadosBruto)):
+        packet, clientADDR = udp.recvfrom(1024)
+        if(isACK(packet, num_seq) and isntCorrupt(packet)):
             count += 1
-            print(f'[Recebido pacote {count+1}/{num_pkts}]')
-            dados = dadosBruto.split()[1] # < temporário, só para representar oq é pra fazer
+            print(f'[Recebido pacote {count}/{num_pkts}]')
+            dados = packet.split()[1] # < temporário, só para representar oq é pra fazer
             recvFile.write(dados)
-            print(f'[Enviando ACK {expctd_pkt_num}]')
-            udp.sendto(expctd_pkt_num.encode(), clientADDR)
-            expctd_pkt_num = invertACK(expctd_pkt_num)
+            print(f'[Enviando ACK {num_seq}]')
+            udp.sendto(num_seq.encode(), clientADDR)
+            num_seq = invertACK(num_seq)
             receiving = count != num_pkts # < pode ser q isso dê erro
         else:
             print(f'''.\n[Recebido pacote duplicado ou corrompido]
-[Re-enviando ACK {expctd_pkt_num}]\n.''')
-            udp.sendto(invertACK(expctd_pkt_num).encode(), clientADDR)
+[Re-enviando ACK {num_seq}]\n.''')
+            udp.sendto(invertACK(num_seq).encode(), clientADDR)
     
     recvFile.close()
     print(f'''_______________________________________
@@ -65,14 +63,17 @@ _______________________________________''')
     # e fazer com que dê um erro de timeout quando passe dos 2seg
     # depois de entrar no modo de recebimento de pacotes
 
+    count = 0
+    num_seq = '0'
+
     recvFile = open(f"servidor//{file_name}", "rb")
     sending = True
     while(sending):# [LOOP DE ENVIO]
         # WAIT SYSTEM CALL:
         while(True):
             # como fazer para receber pacotes aqui para que sejam ignorados?
-            above_call = input(f"Pkt type {expctd_pkt_num}: ")
-            if(above_call == expctd_pkt_num):
+            above_call = input(f"Pkt type {num_seq}: ")
+            if(above_call == num_seq):
                 count += 1
                 break
             
@@ -89,14 +90,14 @@ _______________________________________''')
         while(not(ACK_rcvd)):
             try:
                 dados, clientADDR = udp.recvfrom(1024)
-                ACK_rcvd = isntCorrupt(dados) and isACK(dados, expctd_pkt_num)
+                ACK_rcvd = isntCorrupt(dados) and isACK(dados, num_seq)
             except(socket.timeout):
-                print(f'[!!! Timer do ACK-{expctd_pkt_num} estourado !!!]')
+                print(f'[!!! Timer do ACK-{num_seq} estourado !!!]')
                 print(f'[Re-enviando pacote {count}/{num_pkts}]')
                 udp.sendto(msg, clientADDR)
 
         # CHECK:
-        expctd_pkt_num = invertACK(expctd_pkt_num)
+        num_seq = invertACK(num_seq)
         sending = count != num_pkts
     
     recvFile.close()

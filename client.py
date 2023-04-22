@@ -44,15 +44,15 @@ while True:
     num_pkts = ceil(fileSize/1024) # < o número de pacotes em q o arquivo será enviado, sem contar com a inicial
     #num_pkts = ceil(fileSize/1008)
     count = -1 # < '-1' por causa do pacote inicial
-    half_one_or_zero = '0' # nome temporário
+    num_seq = '0'
     
     sending = True
     while(sending):# [LOOP DE ENVIO]
         # WAIT SYSTEM CALL:
         while(True):
             # como fazer para receber pacotes aqui para que sejam ignorados?
-            above_call = input(f"Pkt type {half_one_or_zero}: ")
-            if(above_call == half_one_or_zero):
+            above_call = input(f"Pkt type {num_seq}: ")
+            if(above_call == num_seq):
                 count += 1
                 break
         
@@ -73,14 +73,14 @@ while True:
         while(not(ACK_rcvd)):
             try:
                 dados, serverADDR = udp.recvfrom(1024)
-                ACK_rcvd = isntCorrupt(dados) and isACK(dados, half_one_or_zero)
+                ACK_rcvd = isntCorrupt(dados) and isACK(dados, num_seq)
             except(socket.timeout):
-                print(f'[!!! Timer do ACK-{half_one_or_zero} estourado !!!]')
+                print(f'[!!! Timer do ACK-{num_seq} estourado !!!]')
                 print(f'[Re-enviando pacote {count}/{num_pkts}]')
                 udp.sendto(msg, dest)
 
         # CHECK:
-        half_one_or_zero = invertACK(half_one_or_zero)
+        num_seq = invertACK(num_seq)
         sending = count != num_pkts
     
     file.close()
@@ -96,30 +96,27 @@ _______________________________________''')
     # por um pacote no modo de recebimento, sem dar timeout
     
     count = 0
-    ACK: int # half_one_or_zero já vai representar o ACK, deixando aq só pra me lembrar
+    num_seq = '0'
 
     file_name = "copia_de_" + file_name
     copyFile = open(f"cliente//{file_name}", "wb")
     
     receiving = True
     while(receiving):# [LOOP DE RECEBIMENTO]
-        dadosBruto, serverADDR = udp.recvfrom(1024)
-        #print(f'[Recebido pacote {count+1}/{num_pkts}]')
-        if(count == 0):
-            half_one_or_zero = dadosBruto.split()[0]
-        if(isACK(dadosBruto, half_one_or_zero) and isntCorrupt(dadosBruto)):
+        packet, serverADDR = udp.recvfrom(1024)
+        if(isACK(packet, num_seq) and isntCorrupt(packet)):
             count += 1
             print(f'[Recebido pacote {count}/{num_pkts}]')
-            dados = dadosBruto.split()[1] # < temporário, só para representar oq é pra fazer
+            dados = packet.split()[1] # < temporário, só para representar oq é pra fazer
             copyFile.write(dados)
-            print(f'[Enviando ACK {half_one_or_zero}]')
-            udp.sendto(half_one_or_zero.encode(), dest)
-            half_one_or_zero = invertACK(half_one_or_zero)
+            print(f'[Enviando ACK {num_seq}]')
+            udp.sendto(num_seq.encode(), dest)
+            num_seq = invertACK(num_seq)
             receiving = count != num_pkts # < pode ser q isso dê erro
         else:
             print(f'''.\n[Recebido pacote duplicado ou corrompido]
-[Re-enviando ACK {half_one_or_zero}]\n.''')
-            udp.sendto(invertACK(half_one_or_zero).encode(), dest)
+[Re-enviando ACK {num_seq}]\n.''')
+            udp.sendto(invertACK(num_seq).encode(), dest)
 
     copyFile.close()
     print(f'''_______________________________________

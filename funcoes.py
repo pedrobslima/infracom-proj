@@ -34,3 +34,6 @@ def invertACK(current: str):
     if(current == '0'):
         return '1'
     return '0'
+
+def calc_checksum(data): # < LEMBRAR DE FAZER ISSO DIREITO!!!
+    return '0000000000000000'
