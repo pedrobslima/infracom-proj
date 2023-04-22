@@ -26,8 +26,8 @@ def isntCorrupt(recvPkt):
     #checksum = calculateChcksum(data)
     return checksum == recv_checksum
 
-def isACK(recvPkt, ACK: int):
-    recv_ACK = int(recvPkt.split()[0]) # < temporário, só para representar oq é pra fazer
+def isACK(recvPkt, ACK: str):
+    recv_ACK = recvPkt.split()[0] # < temporário, só para representar oq é pra fazer
     return ACK == recv_ACK
 
 def invertACK(current: str):

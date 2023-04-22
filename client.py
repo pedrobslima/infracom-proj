@@ -81,18 +81,24 @@ while True:
 [AGUARDANDO RESPOSTA DO SERVIDOR...]
 _______________________________________''')
     
-    # RECEBER ARQUIVO E DUPLICAR: (ainda tá no início, vou dormir agr)
+    # RECEBER ARQUIVO E DUPLICAR: (ainda tá no início)
     count = 0
-    ACK: int
+    ACK: int # half_one_or_zero já vai representar o ACK
     file_name = "copia_de_" + file_name
     copyFile = open(f"cliente//{file_name}", "wb")
     receiving = True
     while(receiving):
-        dados, serverADDR = udp.recvfrom(1024)
+        dadosBruto, serverADDR = udp.recvfrom(1024)
         print(f'[Recebido pacote {count+1}/{num_pkts}]')
-        if(ACK == half_one_or_zero):
+        if(count == 0):
+            half_one_or_zero = dadosBruto.split()[0]
+        if(isACK(dadosBruto, half_one_or_zero) and isntCorrupt(dadosBruto)):
+            count += 1
+            _, dados, _ = dadosBruto.split() # < temporário, só para representar oq é pra fazer
             copyFile.write(dados)
-            udp.sendto(ACK, dest)
+            udp.sendto(half_one_or_zero.encode(), dest)
+            invertACK(half_one_or_zero)
+            receiving = count != num_pkts # < pode ser q isso dê erro
     copyFile.close()
 
 print("\nCliente: Off\n")
