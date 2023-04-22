@@ -21,13 +21,15 @@ def num_in_dec_num_bin_in_bin(x: int, oq_x_mede: str): # < working title
     return soma # num binario de 16bits
 
 def isntCorrupt(recvPkt):
-    _, data, recv_checksum = recvPkt.split() # < temporário, só para representar oq é pra fazer
+    #_, data, recv_checksum = recvPkt.split() # < temporário, só para representar oq é pra fazer
     checksum: str
     #checksum = calculateChcksum(data)
+    return True
     return checksum == recv_checksum
 
 def isACK(recvPkt, ACK: str):
-    recv_ACK = recvPkt.split()[0] # < temporário, só para representar oq é pra fazer
+    #recv_ACK = recvPkt.split()[0] # < temporário, só para representar oq é pra fazer
+    recv_ACK = recvPkt[0:1].decode()
     return ACK == recv_ACK
 
 def invertACK(current: str):

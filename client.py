@@ -41,7 +41,7 @@ while True:
         continue
 
     # ENVIAR O ARQUIVO: ------------------------------------------
-    num_pkts = ceil(fileSize/1024) # < o número de pacotes em q o arquivo será enviado, sem contar com a inicial
+    num_pkts = ceil(fileSize/1023) # < o número de pacotes em q o arquivo será enviado, sem contar com a inicial
     #num_pkts = ceil(fileSize/1008)
     count = -1 # < '-1' por causa do pacote inicial
     num_seq = '0'
@@ -49,24 +49,25 @@ while True:
     sending = True
     while(sending):# [LOOP DE ENVIO]
         # WAIT SYSTEM CALL:
-        while(True):
+        #while(True):
             # como fazer para receber pacotes aqui para que sejam ignorados?
-            above_call = input(f"Pkt type {num_seq}: ")
-            if(above_call == num_seq):
-                count += 1
-                break
+        #    above_call = input(f"Pkt type {num_seq}: ")
+        #    if(above_call == num_seq):
+        #        count += 1
+        #        break
         
         # SEND PACKET:
-        if(count == 0):
+        if(count == -1):
             msg = (num_in_dec_num_bin_in_bin(num_pkts, "decimal") + file_name).encode()
             print('[Enviando pacote introdutório]')
         else:
-            msg = file.read(1024)
-            print(f'[Enviado pacote {count}/{num_pkts}]')
+            msg = file.read(1023)
+            print(f'[Enviado pacote {count+1}/{num_pkts}]')
         #msg = '0'.encode() + data + checksum.encode()
         #^[1024] ^[- de 1]      ^[~1008]    ^[16]
         
-        udp.sendto(msg, dest)
+        udp.sendto(num_seq.encode()+msg, dest)
+        count += 1
 
         # WAIT ACK:
         ACK_rcvd = False
@@ -74,6 +75,7 @@ while True:
             try:
                 dados, serverADDR = udp.recvfrom(1024)
                 ACK_rcvd = isntCorrupt(dados) and isACK(dados, num_seq)
+                print(f'[Recebido ACK {num_seq}]')            
             except(socket.timeout):
                 print(f'[!!! Timer do ACK-{num_seq} estourado !!!]')
                 print(f'[Re-enviando pacote {count}/{num_pkts}]')
@@ -107,7 +109,8 @@ _______________________________________''')
         if(isACK(packet, num_seq) and isntCorrupt(packet)):
             count += 1
             print(f'[Recebido pacote {count}/{num_pkts}]')
-            dados = packet.split()[1] # < temporário, só para representar oq é pra fazer
+            #dados = packet.split()[1] # < temporário, só para representar oq é pra fazer
+            dados = packet[1:]
             copyFile.write(dados)
             print(f'[Enviando ACK {num_seq}]')
             udp.sendto(num_seq.encode(), dest)

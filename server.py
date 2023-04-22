@@ -16,31 +16,29 @@ dados = ''
 # usar o .setblocking(True) no final do loop
 while True:
     # SETUP: -----------------------------------------------------
-    dados, clientADDR = udp.recvfrom(1024)
-    if(dados == b'\x18'):
-        break
+    count = -1
+    num_seq = '0' # < deixar essa declaração inicial fora do loop?
 
     # RECEBER E ARMAZENAR: ---------------------------------------
-    print('[Recebido pacote introdutório]')
-    dados = dados.decode()
-    num_pkts = bin_to_dec(dados[:16])
-    file_name = dados[16:]
-
-    recvFile = open(f"servidor//{file_name}", "wb")
-    
-    count = 0
-    num_seq = '0'
-
     receiving = True
     while(receiving):# [LOOP DE RECEBIMENTO]
         # deveria adicionar condição para verificar 
         # se o endereço do cliente é o mesmo do pacote inicial?
         packet, clientADDR = udp.recvfrom(1024)
+        print(packet)
         if(isACK(packet, num_seq) and isntCorrupt(packet)):
             count += 1
-            print(f'[Recebido pacote {count}/{num_pkts}]')
-            dados = packet.split()[1] # < temporário, só para representar oq é pra fazer
-            recvFile.write(dados)
+            if(count == 0):
+                print('[Recebido pacote introdutório]')
+                dados = packet.decode() # por enquanto sem checksum
+                num_pkts = bin_to_dec(dados[1:17])
+                file_name = dados[17:]
+                recvFile = open(f"servidor//{file_name}", "wb")
+            else:
+                print(f'[Recebido pacote {count}/{num_pkts}]')
+                #dados = packet.split()[1] # < temporário, só para representar oq é pra fazer
+                dados = packet[1:]
+                recvFile.write(dados)
             print(f'[Enviando ACK {num_seq}]')
             udp.sendto(num_seq.encode(), clientADDR)
             num_seq = invertACK(num_seq)
@@ -70,20 +68,22 @@ _______________________________________''')
     sending = True
     while(sending):# [LOOP DE ENVIO]
         # WAIT SYSTEM CALL:
-        while(True):
+        #while(True):
             # como fazer para receber pacotes aqui para que sejam ignorados?
-            above_call = input(f"Pkt type {num_seq}: ")
-            if(above_call == num_seq):
-                count += 1
-                break
+        #    above_call = input(f"Pkt type {num_seq}: ")
+        #    if(above_call == num_seq):
+        #        count += 1
+        #        break
             
         # SEND PACKET:
-        msg = recvFile.read(1024)
+        msg = recvFile.read(1023)
+        
+        udp.sendto(num_seq.encode()+msg, clientADDR)
+        count += 1
+
         print(f'[Enviado pacote {count}/{num_pkts}]')
         #msg = '0'.encode() + data + checksum.encode()
         #^[1024] ^[- de 1]      ^[~1008]    ^[16]
-        
-        udp.sendto(msg, clientADDR)
 
         # WAIT ACK:
         ACK_rcvd = False
