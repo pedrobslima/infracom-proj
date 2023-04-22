@@ -2,6 +2,7 @@ import socket
 from math import ceil
 import os
 from funcoes import *
+
 #socket.setdefaulttimeout(2)
 # Para começar a fazer os testes, precisa 1o criar um novo terminal,
 # e depois precisa clicar naquele simbolozinho de duas janelas na aba do terminal
@@ -60,6 +61,8 @@ while True:
         if(count == -1):
             msg = (num_in_dec_num_bin_in_bin(num_pkts, "decimal") + file_name).encode()
             print('[Enviando pacote introdutório]')
+        elif(count > -1 and count < 2):
+            checksum = checksum_calculador(file)
         else:
             msg = file.read(1023)
             print(f'[Enviado pacote {count+1}/{num_pkts}]')
@@ -68,6 +71,8 @@ while True:
         
         udp.sendto(num_seq.encode()+msg, dest)
         count += 1
+        checksum = checksum_calculador(num_seq.encode()+msg)
+        print("olá bom dia, o checksum é", checksum)
 
         # WAIT ACK:
         ACK_rcvd = False

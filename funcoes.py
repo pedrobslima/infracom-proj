@@ -1,3 +1,10 @@
+import zlib
+
+#o próprio calculador de checksum
+def checksum_calculador(data):
+    checksum = zlib.crc32(data)
+    return checksum
+
 def bin_to_dec(x: str):
     soma: int = 0
     for i in range(16):
