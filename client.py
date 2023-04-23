@@ -15,7 +15,7 @@ ORGN_HOST = "localhost"  # < endereço IP do cliente (127.0.0.1 é o padrão)
 ORGN_PORT = 3000         # < porta do cliente
 orgn = (ORGN_HOST, ORGN_PORT)
 
-PROBAB_PERDA = 10 # um inteiro de 0 a 100
+PROBAB_PERDA = 5 # um inteiro de 0 a 100
 #   0 = Nunca vai perder pacote
 # 100 = Sempre vai perder pacote
 

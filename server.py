@@ -5,7 +5,7 @@ ORGN_HOST = "localhost"  # < endereço IP do servidor (127.0.0.1 é o padrão)
 ORGN_PORT = 5000         # < porta do servidor
 orgn = (ORGN_HOST, ORGN_PORT) # < vai servir para associar essa máquina ao cliente
 
-PROBAB_PERDA = 10 # um inteiro de 0 a 100
+PROBAB_PERDA = 5 # um inteiro de 0 a 100
 #   0 = Nunca vai perder pacote
 # 100 = Sempre vai perder pacote
 
