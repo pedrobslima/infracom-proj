@@ -42,7 +42,7 @@ while True:
         continue
 
     # ENVIAR O ARQUIVO: ------------------------------------------
-    num_pkts = ceil(fileSize/1023) # < o número de pacotes em q o arquivo será enviado, sem contar com a inicial
+    num_pkts = ceil(fileSize/1021) # < o número de pacotes em q o arquivo será enviado, sem contar com a inicial e o checksum
     #num_pkts = ceil(fileSize/1008)
     count = -1 # < '-1' por causa do pacote inicial
     num_seq = '0'
