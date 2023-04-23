@@ -2,7 +2,7 @@
 
 - O servidor é representado por server.py
 
-- A pasta do servidor, no início, não possui nada, nela vão ser armazenados os arquivos vindos do cliente
+- A pasta do servidor, no início, só possui um arquivo filler, para impedir que o github não apague a pasta na hora do push. Será onde os arquivos recebidos por server.py serão armazenados
 
 - O cliente é representado por client.py
 
