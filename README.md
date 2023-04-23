@@ -6,6 +6,8 @@
 
 - O cliente é representado por client.py
 
+- Ambos client.py e server.py tem uma variável 'PROBAB_PERDA'. Quem for rodar o código pode mudá-la, em cada um dos arquivos, para alterar a probabilidade de perdas de pacote na hora da transferência de arquivos.
+
 - A pasta do cliente, no início, possui 3 arquivos que poderão ser usados como teste para a transferência, além de ser a pasta em que as cópias dos arquivos, vindas do servidor, serão armazenadas
 
 - funcoes.py atualmente só armazena umas funções que usa binário, depois pode mudar o nome ou tirar elas
