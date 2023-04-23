@@ -43,9 +43,9 @@ while True:
 
     # ENVIAR O ARQUIVO: ------------------------------------------
     num_pkts = ceil(fileSize/1021) # < o número de pacotes em q o arquivo será enviado, sem contar com a inicial e o checksum
-    #num_pkts = ceil(fileSize/1008)
+    # 1021 para o arquivo, 1 para o num de sequencia e 2 para o checksum
     count = -1 # < '-1' por causa do pacote inicial
-    num_seq = '0'
+    num_seq = b'\x00'
     
     sending = True
     while(sending):# [LOOP DE ENVIO]
@@ -59,17 +59,17 @@ while True:
         
         # SEND PACKET:
         if(count == -1):
-            msg = (num_in_dec_num_bin_in_bin(num_pkts, "decimal") + file_name).encode()
-            checksum = str(checksum_calculador(msg) & 0xFFFF)
+            msg = num_seq + (num_in_dec_num_bin_in_bin(num_pkts, "decimal") + file_name).encode()
             print('[Enviando pacote introdutório]')
         else:
-            msg = file.read(1021)
-            checksum = str(checksum_calculador(msg) & 0xFFFF)
-            print(f'[Enviado pacote {count+1}/{num_pkts}]')
-        #msg = '0'.encode() + data + checksum.encode()
-        #^[1024] ^[- de 1]      ^[~1008]    ^[16]
-        
-        udp.sendto(num_seq.encode()+checksum.encode()+msg, dest)
+            msg = num_seq + file.read(1021)
+            print(f'[Enviando pacote {count+1}/{num_pkts}]')
+
+        checksum = calc_checksum(msg)
+        a = checksum+msg
+        print(checksum+num_seq)
+        udp.sendto(checksum+msg, dest)
+        #          ^^^^^^^^^^^^ checksum[:16], num_seq[16:17], dados[17:]
         count += 1
 
         # WAIT ACK:
@@ -78,11 +78,11 @@ while True:
             try:
                 dados, serverADDR = udp.recvfrom(1024)
                 ACK_rcvd = isntCorrupt(dados) and isACK(dados, num_seq)
-                print(f'[Recebido ACK {num_seq}]')            
+                print(f'[Recebido ACK {printACK(num_seq)}]')
             except(socket.timeout):
-                print(f'[!!! Timer do ACK-{num_seq} estourado !!!]')
+                print(f'[!!! Timer do ACK-{printACK(num_seq)} estourado !!!]')
                 print(f'[Re-enviando pacote {count}/{num_pkts}]')
-                udp.sendto(msg, dest)
+                udp.sendto(checksum+msg, dest)
 
         # CHECK:
         num_seq = invertACK(num_seq)
@@ -101,7 +101,7 @@ _______________________________________''')
     # por um pacote no modo de recebimento, sem dar timeout
     
     count = 0
-    num_seq = '0'
+    num_seq = b'\x00'
 
     file_name = "copia_de_" + file_name
     copyFile = open(f"cliente//{file_name}", "wb")
@@ -112,17 +112,17 @@ _______________________________________''')
         if(isACK(packet, num_seq) and isntCorrupt(packet)):
             count += 1
             print(f'[Recebido pacote {count}/{num_pkts}]')
-            #dados = packet.split()[1] # < temporário, só para representar oq é pra fazer
-            dados = packet[1:]
+            dados = packet[3:]
             copyFile.write(dados)
-            print(f'[Enviando ACK {num_seq}]')
-            udp.sendto(num_seq.encode(), dest)
-            num_seq = invertACK(num_seq)
+            print(f'[Enviando ACK {printACK(num_seq)}]')
             receiving = count != num_pkts # < pode ser q isso dê erro
         else:
             print(f'''.\n[Recebido pacote duplicado ou corrompido]
-[Re-enviando ACK {num_seq}]\n.''')
-            udp.sendto(invertACK(num_seq).encode(), dest)
+[Re-enviando ACK {printACK(num_seq)}]\n.''')
+            num_seq = invertACK(num_seq) # tirar esse num_seq no futuro?
+        checksum = calc_checksum(num_seq)
+        udp.sendto(checksum+num_seq, dest)
+        num_seq = invertACK(num_seq)
 
     copyFile.close()
     print(f'''_______________________________________
