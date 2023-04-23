@@ -5,6 +5,10 @@ ORGN_HOST = "localhost"  # < endereço IP do servidor (127.0.0.1 é o padrão)
 ORGN_PORT = 5000         # < porta do servidor
 orgn = (ORGN_HOST, ORGN_PORT) # < vai servir para associar essa máquina ao cliente
 
+PROBAB_PERDA = 10 # um inteiro de 0 a 100
+#   0 = Nunca vai perder pacote
+# 100 = Sempre vai perder pacote
+
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp.bind(orgn)
 
@@ -46,7 +50,8 @@ while True:
 [Re-enviando ACK {printACK(num_seq)}]\n.''')
             num_seq = invertACK(num_seq) # tirar esse num_seq no futuro?
         checksum = calc_checksum(num_seq)
-        udp.sendto(checksum+num_seq, clientADDR)
+        if(not(gerador_perdas(PROBAB_PERDA))):
+            udp.sendto(checksum+num_seq, clientADDR)
         num_seq = invertACK(num_seq)
     
     recvFile.close()
@@ -79,7 +84,8 @@ _______________________________________''')
         # SEND PACKET:
         msg = num_seq + recvFile.read(1021)
         checksum = calc_checksum(msg)
-        udp.sendto(checksum+msg, clientADDR)
+        if(not(gerador_perdas(PROBAB_PERDA))):
+            udp.sendto(checksum+msg, clientADDR)
         count += 1
 
         print(f'[Enviado pacote {count}/{num_pkts}]')
@@ -96,7 +102,8 @@ _______________________________________''')
             except(socket.timeout):
                 print(f'[!!! Timer do ACK-{printACK(num_seq)} estourado !!!]')
                 print(f'[Re-enviando pacote {count}/{num_pkts}]')
-                udp.sendto(checksum+msg, clientADDR)
+                if(not(gerador_perdas(PROBAB_PERDA))):
+                    udp.sendto(checksum+msg, clientADDR)
 
         # CHECK:
         num_seq = invertACK(num_seq)

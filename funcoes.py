@@ -1,3 +1,5 @@
+import random
+
 def calc_checksum(data: bytes):
     # k: quant_bits de cada subdivisão da msg -> 
     #                         quant de subdivisões de 16bits da msg
@@ -70,3 +72,10 @@ def invertACK(current: bytes):
 def printACK(num: bytes):
     temp = int.from_bytes(num, byteorder='big')
     return temp
+
+def gerador_perdas(probabilidade: int):
+    roll = random.randint(0, 100)
+    if(roll < probabilidade):
+        print('PACOTE PERDIDO!')
+        return True
+    return False
