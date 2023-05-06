@@ -29,6 +29,8 @@ while True:
         # deveria adicionar condição para verificar 
         # se o endereço do cliente é o mesmo do pacote inicial?
         packet, clientADDR = udp.recvfrom(1024)
+        clientUDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        clientUDP.connect(clientADDR)
         if(isACK(packet, num_seq) and isntCorrupt(packet)):
             # PACOTE CERTINHO
             dados = packet[3:]
@@ -56,7 +58,7 @@ while True:
         # FINAL DESSA REPETIÇÃO DO LOOP
         checksum = calc_checksum(num_seq) # calcula checksum
         if(not(gerador_perdas(PROBAB_PERDA))): # calcula se perdeu
-            udp.sendto(checksum+num_seq, clientADDR) # envia
+            clientUDP.sendto(checksum+num_seq, clientADDR) # envia
         num_seq = invertACK(num_seq) # inverte num de sequência
     
     recvFile.close()
