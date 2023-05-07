@@ -12,6 +12,12 @@ orgn = (HOST, PORT) # < vai servir para associar essa máquina ao cliente
 #dest = ("localhost", 3000) 
 # ^ dps tem que tirar
 
+clientes = {} #aqui é onde será armanezados todos os clientes conectados ao servidor 
+mesas = {} #esse dicionário serve para agrupar os clientes por mesa
+cliente = None
+menu = ""
+cardapio = {"arroz":5.00, "feijão":2.00, "batata":10.00}
+
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp.bind(orgn)
 # Ainda tecnicamente precisa fazer os passos iniciais da criação
@@ -31,8 +37,16 @@ while(dados_decodados.capitalize() != "Chefia"):
         udp.sendto(b'Digite seu nome', clientADDR)
         cliente_nome, clientADDR = udp.recvfrom(1024)
         udp.sendto(b'Digite uma das opcoes', clientADDR)
-        consumidor = consumidor(cliente_nome, cliente_mesa, clientADDR)
+        cliente = Consumidor(cliente_nome, cliente_mesa, clientADDR, 3000) #testando a porta 
+        clientes[cliente_nome] = cliente 
 
+        if(cliente_mesa in mesas):
+            mesas[cliente_mesa].append(cliente) #se a mesa já tiver no dicionário, adiciono esse novo cliente à lista de clientes
+        else:
+        #se não tive salva a mesa, criamos ela 
+            lista_clientes = [] #criamos a lista de cliente pra salvar no valor do dicionario corresponde àquela mesa
+            lista_clientes.append(cliente) #adicionamos o cliente a lista
+            mesas[cliente_mesa] = lista_clientes #adicionamos a nova mesa no dic
        
         
         # [agora aqui precisaria adicionar as info coletadas no arquivo json]
@@ -53,6 +67,14 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
         # v abrindo arquivo escolhido
         file = open("servidor\cardapio.txt", "rb") # < mudar o nome da variável para 'cardapio' msm?
         #file = open("servidor\bigFile_teste.txt", "rb")
+
+        for chave, valor in cardapio.items():
+                tam_cardapio = len(cardapio.items())
+                udp.sendto(tam_cardapio.encode(), clientADDR)
+                item = f"{chave} => R$ {valor}\n"
+                udp.sendto(item.encode(), clientADDR)
+
+
         for i in range(num_pkts): # loop para envio de pacotes
             udp.sendto((str(i)).encode(), clientADDR) # < usado só para testes, diz qual o nº do pacote 
             udp.sendto(file.read(1024), clientADDR)   

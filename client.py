@@ -32,6 +32,10 @@ while(msg != '\x18') and not encerrado:
             udp.sendto(msg.encode(), dest)
     
     while((msg == "1" or msg.capitalize() == "Cardápio") and not(fileEnd)):
+        tam_cardapio, serverADDR = udp.recvfrom(1024)
+        for i in range(int(tam_cardapio.decode())):
+            item, serverADDR = udp.recvfrom(1024)
+            print(item.decode())
         num_pkt, serverADDR = udp.recvfrom(1024)
         if(num_pkt != b'file end'):
             print("Pacote nº: ", num_pkt.decode())
