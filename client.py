@@ -18,8 +18,9 @@ udp.bind(orgn)
 
 print("Cliente: On\nPara sair use CTRL+X\n")
 
+encerrado = False
 msg = ''
-while(msg != '\x18'):
+while(msg != '\x18') and not encerrado:
     msg = input("[Cliente]: ") # < ação que o cliente deseja fazer
     udp.sendto(msg.encode(), dest) # < o .encode() transforma a string em um arquivo em bits
     fileEnd = False # < indicará quando o arquivo terminou para parar o loop de recebimento
@@ -48,8 +49,6 @@ while(msg != '\x18'):
     if msg == '3' or msg.capitalize() == 'Conta individual':
         dados, serverADDR = udp.recvfrom(1024)
         print(f"[CINtofome]: {dados.decode()}")
-        msg = input("[Cliente]: ")
-        udp.sendto(msg.encode(), dest)
 
     #faltando conta da mesa
 
@@ -59,6 +58,12 @@ while(msg != '\x18'):
 
     if msg == '5' or msg.capitalize() == 'Levantar':
         dados, serverADDR = udp.recvfrom(1024)
+        print(f"[CINtofome]: {dados.decode()}")
+        if dados.decode() == 'Voce ainda nao pagou sua conta':
+            msg = input("[Cliente]: ")
+            udp.sendto(msg.encode(), dest)
+        else:
+            encerrado = True
 
 print("\nCliente: Off\n")
 udp.close()
