@@ -60,46 +60,59 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
     # [adicionar condicional para saber se o clientADDR é do socket atual ou não]
     if(dados.decode() == "1" or dados.decode().capitalize() == "Cardapio"):
         # v método para achar o tamanho em bytes do arquivo
-        fileSize = os.stat("servidor\cardapio.txt").st_size
-        print(f"Size: {fileSize} bytes")
+        #fileSize = os.stat("servidor\cardapio.txt").st_size
+        #print(f"Size: {fileSize} bytes")
         # v definindo o número de pacotes que deverão ser enviados
-        num_pkts = ceil(fileSize/1024)
+        #num_pkts = ceil(fileSize/1024)
         # v abrindo arquivo escolhido
-        file = open("servidor\cardapio.txt", "rb") # < mudar o nome da variável para 'cardapio' msm?
+        #file = open("servidor\cardapio.txt", "rb") # < mudar o nome da variável para 'cardapio' msm?
         #file = open("servidor\bigFile_teste.txt", "rb")
 
         for chave, valor in cardapio.items():
-                tam_cardapio = len(cardapio.items())
+                tam_cardapio = str(len(cardapio.items()))
                 udp.sendto(tam_cardapio.encode(), clientADDR)
                 item = f"{chave} => R$ {valor}\n"
                 udp.sendto(item.encode(), clientADDR)
 
 
-        for i in range(num_pkts): # loop para envio de pacotes
-            udp.sendto((str(i)).encode(), clientADDR) # < usado só para testes, diz qual o nº do pacote 
-            udp.sendto(file.read(1024), clientADDR)   
+        #for i in range(num_pkts): # loop para envio de pacotes
+            #udp.sendto((str(i)).encode(), clientADDR) # < usado só para testes, diz qual o nº do pacote 
+            #udp.sendto(file.read(1024), clientADDR)   
             # ^ ao usar o método .read(), a própria posição do cursor no arquivo 
             # mudará automaticamente para a posição pertencente ao 1025º byte
             # e assim segue, de 1024 bytes por 1024 bytes
             # Obs.: Se você pedir para o código ler uma quant de bytes 
             # maior do que resta, não vai dar erro nenhum
-        udp.sendto('file end'.encode(), clientADDR)
+        #udp.sendto('file end'.encode(), clientADDR)
         # ^ é correto usar isso para sinalizar que o arquivo chegou ao seu fim?
-        file.close() # < fechando arquivo
+        #file.close() # < fechando arquivo
 
     if(dados.decode() == "2" or dados.decode().capitalize() == "Pedido"):
         udp.sendto(b'Digite qual o primeiro item que gostaria', clientADDR)
         cliente_pedido, clientADDR = udp.recvfrom(1024)
-        consumidor.registrar_pedido() #precisa linkar o numero do prato com o prato em si
+        cliente.registrar_pedido(cliente_pedido.decode(), cardapio[cliente_pedido.decode()]) 
 
     if (dados.decode() == '3' or dados.decode().capitalize() == 'Conta individual'):
-        udp.sendto(consumidor.get_conta_individual(), clientADDR)
-    
-    if (dados.decode() == '4' or dados.decode().capitalize() == 'Pagar'):
-        conta = f'Sua conta foi {consumidor.custo}. Digite o valor a ser pago' 
+        udp.sendto(cliente.get_conta_individual().encode(), clientADDR)
+
+    if dados.decode() == '4' or dados.decode().capitalize() == 'Conta da mesa':
+        total_mesa_pagar = 0 #variável pra ir somando o custo dos clientes
+
+        clientes_mesa = mesas[cliente.mesa] #aqui pegamos a lista de clientes da mesa em que o usuário está
+        tam_mesa = len(cliente_mesa)
+        udp.sendto(tam_mesa.encode(), clientADDR)
+        
+        for consumidor in clientes_mesa: #percorremos essa lista. Consumidor vai ser a variável que vai armazenar cada objeto cliente dessa lista
+            total_mesa_pagar += consumidor.custo #vamos somando o custo total de todos daquela  mesa
+
+            total = (f"Total da mesa - R$ {total_mesa_pagar}\n-----------------_- ") #printamos o valor total
+            udp.sendto(total.encode(), clientADDR) 
+
+    if (dados.decode() == '5' or dados.decode().capitalize() == 'Pagar'):
+        conta = f'Sua conta foi {cliente.custo}. Digite o valor a ser pago' 
         valor, clientADDR = udp.recvfrom(1024) # manda o valor a ser pago
         udp.sendto(conta.encode(), clientADDR) #recebe o valor
-        pago = consumidor.pagar_conta() #faz o calculo do valor pago com a conta
+        pago = cliente.pagar_conta() #faz o calculo do valor pago com a conta
         if pago == 'menor':
             udp.sendto(b'O valor nao e suficiente para pagar a conta', clientADDR)
         elif pago == 'pago':
@@ -108,8 +121,8 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
             pago = f'Voce está pagando {pago.encode()} a mais que a sua conta. O valor excedente será distribuído para os outros clientes'
             udp.sendto(pago, clientADDR)
 
-    if dados.decode() == '5' or dados.decode().capitalize() == 'Levantar':
-        if consumidor.status_conta:
+    if dados.decode() == '6' or dados.decode().capitalize() == 'Levantar':
+        if cliente.status_conta:
             udp.sendto(b'Volte sempre!', clientADDR)
         else:
             udp.sendto(b'Voce ainda nao pagou sua conta', clientADDR)

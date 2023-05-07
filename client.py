@@ -25,25 +25,26 @@ while(msg != '\x18') and not encerrado:
     udp.sendto(msg.encode(), dest) # < o .encode() transforma a string em um arquivo em bits
     fileEnd = False # < indicará quando o arquivo terminou para parar o loop de recebimento
     if(msg.capitalize() == "Chefia"):
-        for i in range(3): 
+        for i in range(3):
             dados, serverADDR = udp.recvfrom(1024)
             print(f"[CINtofome]: {dados.decode()}")
             msg = input("[Cliente]: ")
             udp.sendto(msg.encode(), dest)
-    
+
     while((msg == "1" or msg.capitalize() == "Cardápio") and not(fileEnd)):
         tam_cardapio, serverADDR = udp.recvfrom(1024)
+        print("[CINtofome]:")
         for i in range(int(tam_cardapio.decode())):
             item, serverADDR = udp.recvfrom(1024)
             print(item.decode())
-        num_pkt, serverADDR = udp.recvfrom(1024)
-        if(num_pkt != b'file end'):
-            print("Pacote nº: ", num_pkt.decode())
-            dados, serverADDR = udp.recvfrom(1024)
-            print(dados.decode())
-        else:
-            fileEnd = True
-    
+        #num_pkt, serverADDR = udp.recvfrom(1024)
+        # if(num_pkt != b'file end'):
+        #     print("Pacote nº: ", num_pkt.decode())
+        #     dados, serverADDR = udp.recvfrom(1024)
+        #     print(dados.decode())
+        # else:
+        #     fileEnd = True
+
     if msg == '2' or msg.capitalize() == 'Pedido':
         dados, serverADDR = udp.recvfrom(1024)
         print(f"[CINtofome]: {dados.decode()}")
@@ -54,13 +55,20 @@ while(msg != '\x18') and not encerrado:
         dados, serverADDR = udp.recvfrom(1024)
         print(f"[CINtofome]: {dados.decode()}")
 
-    #faltando conta da mesa
+    if msg == '4' or msg.capitalize() == 'Conta da mesa':
+        tam_mesa, serverADDR = udp.recvfrom(1024)
+        for i in int(tam_mesa.decode()):
+            contas, serverADDR = udp.recvfrom(1024)
+            print(contas)
+        msg = input("[Cliente]: ")
+        udp.sendto(msg.encode(), dest)
 
-    if msg == '4' or msg.capitalize() == 'Pagar':
+    if msg == '5' or msg.capitalize() == 'Pagar':
         dados, serverADDR = udp.recvfrom(1024)
-        msg = input()
+        msg = input("[Cliente]: ")
+        udp.sendto(msg.encode(), dest)
 
-    if msg == '5' or msg.capitalize() == 'Levantar':
+    if msg == '6' or msg.capitalize() == 'Levantar':
         dados, serverADDR = udp.recvfrom(1024)
         print(f"[CINtofome]: {dados.decode()}")
         if dados.decode() == 'Voce ainda nao pagou sua conta':
