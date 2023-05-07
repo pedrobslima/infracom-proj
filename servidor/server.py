@@ -3,6 +3,7 @@ from math import ceil
 import os
 import time # vai usar para dar os waits(talvez) e para pegar a hora atual
 import json
+from consumidor import Consumidor
 #from statemachine import State, StateMachine
 
 HOST = "localhost"  # < endereço IP do servidor (127.0.0.1 é o padrão)
@@ -17,16 +18,23 @@ udp.bind(orgn)
 # da conexão via UDP, do cliente pedindo para criar uma conexão com o server
 print("Servidor: Stand by\n")
 
-dados = ''
+dados_decodados = ''
 # ESTADO 0 (fazer os estados usando funções?)
 #def Standby():
-while(dados.decode().capitalize() != "Chefia"):
+while(dados_decodados.capitalize() != "Chefia"):
     dados, clientADDR = udp.recvfrom(1024)
-    if(dados.decode().capitalize() == "Chefia"):
-        udp.sendto('Digite seu ID')
-        cliente_id, clientADDR = udp.recvfrom(1024)
-        udp.sendto('Digite sua mesa')
+    dados_decodados = dados.decode()
+
+    if(dados_decodados.capitalize() == "Chefia"):
+        udp.sendto(b'Digite sua mesa', clientADDR)
         cliente_mesa, clientADDR = udp.recvfrom(1024)
+        udp.sendto(b'Digite seu nome', clientADDR)
+        cliente_nome, clientADDR = udp.recvfrom(1024)
+        udp.sendto(b'Digite uma das opcoes', clientADDR)
+        consumidor = consumidor(cliente_nome, cliente_mesa, clientADDR)
+
+       
+        
         # [agora aqui precisaria adicionar as info coletadas no arquivo json]
         print("Servidor: On\n")
 
@@ -36,7 +44,7 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
     dados, clientADDR = udp.recvfrom(1024) # < tamanho do buffer é de 1024 bytes
     print(clientADDR, dados.decode()) # < o .decode() transforma o arquivo em bits em string
     # [adicionar condicional para saber se o clientADDR é do socket atual ou não]
-    if(dados.decode() == "1" or dados.decode().capitalize() == "Cardárpio"):
+    if(dados.decode() == "1" or dados.decode().capitalize() == "Cardapio"):
         # v método para achar o tamanho em bytes do arquivo
         fileSize = os.stat("servidor\cardapio.txt").st_size
         print(f"Size: {fileSize} bytes")
@@ -56,6 +64,33 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
         udp.sendto('file end'.encode(), clientADDR)
         # ^ é correto usar isso para sinalizar que o arquivo chegou ao seu fim?
         file.close() # < fechando arquivo
+
+    if(dados.decode() == "2" or dados.decode().capitalize() == "Pedido"):
+        udp.sendto(b'Digite qual o primeiro item que gostaria', clientADDR)
+        cliente_pedido, clientADDR = udp.recvfrom(1024)
+        consumidor.registrar_pedido() #precisa linkar o numero do prato com o prato em si
+
+    if (dados.decode() == '3' or dados.decode().capitalize() == 'Conta individual'):
+        udp.sendto(consumidor.get_conta_individual(), clientADDR)
+    
+    if (dados.decode() == '4' or dados.decode().capitalize() == 'Pagar'):
+        conta = f'Sua conta foi {consumidor.custo}. Digite o valor a ser pago' 
+        valor, clientADDR = udp.recvfrom(1024) # manda o valor a ser pago
+        udp.sendto(conta.encode(), clientADDR) #recebe o valor
+        pago = consumidor.pagar_conta() #faz o calculo do valor pago com a conta
+        if pago == 'menor':
+            udp.sendto(b'O valor nao e suficiente para pagar a conta', clientADDR)
+        elif pago == 'pago':
+            udp.sendto(b'Voce pagou sua conta, obrigado!')
+        else: #quando o valor for maior que o da conta
+            pago = f'Voce está pagando {pago.encode()} a mais que a sua conta. O valor excedente será distribuído para os outros clientes'
+            udp.sendto(pago, clientADDR)
+
+    if dados.decode() == '5' or dados.decode().capitalize() == 'Levantar':
+        if consumidor.status_conta:
+            udp.sendto(b'Volte sempre!', clientADDR)
+        else:
+            udp.sendto(b'Voce ainda nao pagou sua conta', clientADDR)
 
 # v o ideal seria botar essas duas linhas assim que o cliente se levantasse da mesa (no loop)
 print("\nServidor: Off\n")

@@ -24,13 +24,13 @@ while(msg != '\x18'):
     udp.sendto(msg.encode(), dest) # < o .encode() transforma a string em um arquivo em bits
     fileEnd = False # < indicará quando o arquivo terminou para parar o loop de recebimento
     if(msg.capitalize() == "Chefia"):
-        for i in range(2): 
+        for i in range(3): 
             dados, serverADDR = udp.recvfrom(1024)
             print(f"[CINtofome]: {dados.decode()}")
             msg = input("[Cliente]: ")
             udp.sendto(msg.encode(), dest)
     
-    while((msg == "1" or msg.capitalize() == "Cardárpio") and not(fileEnd)):
+    while((msg == "1" or msg.capitalize() == "Cardápio") and not(fileEnd)):
         num_pkt, serverADDR = udp.recvfrom(1024)
         if(num_pkt != b'file end'):
             print("Pacote nº: ", num_pkt.decode())
@@ -38,6 +38,27 @@ while(msg != '\x18'):
             print(dados.decode())
         else:
             fileEnd = True
+    
+    if msg == '2' or msg.capitalize() == 'Pedido':
+        dados, serverADDR = udp.recvfrom(1024)
+        print(f"[CINtofome]: {dados.decode()}")
+        msg = input("[Cliente]: ")
+        udp.sendto(msg.encode(), dest)
+
+    if msg == '3' or msg.capitalize() == 'Conta individual':
+        dados, serverADDR = udp.recvfrom(1024)
+        print(f"[CINtofome]: {dados.decode()}")
+        msg = input("[Cliente]: ")
+        udp.sendto(msg.encode(), dest)
+
+    #faltando conta da mesa
+
+    if msg == '4' or msg.capitalize() == 'Pagar':
+        dados, serverADDR = udp.recvfrom(1024)
+        msg = input()
+
+    if msg == '5' or msg.capitalize() == 'Levantar':
+        dados, serverADDR = udp.recvfrom(1024)
 
 print("\nCliente: Off\n")
 udp.close()
