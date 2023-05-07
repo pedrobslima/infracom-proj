@@ -57,7 +57,7 @@ while(msg != '\x18') and not encerrado:
 
     if msg == '4' or msg.capitalize() == 'Conta da mesa':
         tam_mesa, serverADDR = udp.recvfrom(1024)
-        for i in int(tam_mesa.decode()):
+        for i in range(int(tam_mesa.decode())):
             contas, serverADDR = udp.recvfrom(1024)
             print(contas)
         msg = input("[Cliente]: ")
