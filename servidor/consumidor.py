@@ -41,10 +41,9 @@ class Consumidor:
         
         elif(valor_pago == self.custo):
             self.custo = 0
-            self.status = True #como o valor está correto, colocamos o status como True, ou seja, pago
+            self.status_conta = True #como o valor está correto, colocamos o status como True, ou seja, pago
             return "pago"
             
         else:
-            self.status = True
-            self.custo = 0
+            self.status_conta = True
             return valor_pago - self.custo

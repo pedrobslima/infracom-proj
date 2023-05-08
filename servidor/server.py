@@ -32,11 +32,14 @@ while(dados_decodados.capitalize() != "Chefia"):
     dados_decodados = dados.decode()
 
     if(dados_decodados.capitalize() == "Chefia"):
-        udp.sendto(b'Digite sua mesa', clientADDR)
+        mesa_print = 'Digite sua mesa:'
+        udp.sendto(mesa_print.encode(), clientADDR)
         cliente_mesa, clientADDR = udp.recvfrom(1024)
-        udp.sendto(b'Digite seu nome', clientADDR)
+        nome_print = 'Digite seu nome'
+        udp.sendto(nome_print.encode(), clientADDR)
         cliente_nome, clientADDR = udp.recvfrom(1024)
-        udp.sendto(b'Digite uma das opcoes', clientADDR)
+        opcao_print = 'Digite uma das opcoes'
+        udp.sendto(opcao_print.encode(), clientADDR)
         cliente = Consumidor(cliente_nome, cliente_mesa, clientADDR, 3000) #testando a porta 
         clientes[cliente_nome] = cliente 
 
@@ -67,10 +70,9 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
         # v abrindo arquivo escolhido
         #file = open("servidor\cardapio.txt", "rb") # < mudar o nome da variável para 'cardapio' msm?
         #file = open("servidor\bigFile_teste.txt", "rb")
-
+        tam_cardapio = str(len(cardapio.items()))
+        udp.sendto(tam_cardapio.encode(), clientADDR)
         for chave, valor in cardapio.items():
-                tam_cardapio = str(len(cardapio.items()))
-                udp.sendto(tam_cardapio.encode(), clientADDR)
                 item = f"{chave} => R$ {valor}\n"
                 udp.sendto(item.encode(), clientADDR)
 
@@ -88,7 +90,7 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
         #file.close() # < fechando arquivo
 
     if(dados.decode() == "2" or dados.decode().capitalize() == "Pedido"):
-        udp.sendto(b'Digite qual o primeiro item que gostaria', clientADDR)
+        udp.sendto(b'Digite qual o item que voce gostaria', clientADDR)
         cliente_pedido, clientADDR = udp.recvfrom(1024)
         cliente.registrar_pedido(cliente_pedido.decode(), cardapio[cliente_pedido.decode()]) 
 
@@ -99,27 +101,31 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
         total_mesa_pagar = 0 #variável pra ir somando o custo dos clientes
 
         clientes_mesa = mesas[cliente.mesa] #aqui pegamos a lista de clientes da mesa em que o usuário está
-        tam_mesa = len(cliente_mesa)
+        tam_mesa = str(len(cliente_mesa))
         udp.sendto(tam_mesa.encode(), clientADDR)
         
         for consumidor in clientes_mesa: #percorremos essa lista. Consumidor vai ser a variável que vai armazenar cada objeto cliente dessa lista
             total_mesa_pagar += consumidor.custo #vamos somando o custo total de todos daquela  mesa
+            udp.sendto(cliente.get_conta_individual().encode(), clientADDR)
 
-            total = (f"Total da mesa - R$ {total_mesa_pagar}\n-----------------_- ") #printamos o valor total
-            udp.sendto(total.encode(), clientADDR) 
+        total = (f"Total da mesa - R$ {total_mesa_pagar}") #printamos o valor total
+        udp.sendto(total.encode(), clientADDR) 
+            
 
     if (dados.decode() == '5' or dados.decode().capitalize() == 'Pagar'):
-        conta = f'Sua conta foi {cliente.custo}. Digite o valor a ser pago' 
-        valor, clientADDR = udp.recvfrom(1024) # manda o valor a ser pago
-        udp.sendto(conta.encode(), clientADDR) #recebe o valor
-        pago = cliente.pagar_conta() #faz o calculo do valor pago com a conta
+        conta = f'Sua conta foi {int(cliente.custo)}. Digite o valor a ser pago' 
+        udp.sendto(conta.encode(), clientADDR) # manda o valor a ser pago
+        valor, clientADDR = udp.recvfrom(1024) #recebe o valor
+        pago = cliente.pagar_conta(int(valor.decode())) #faz o calculo do valor pago com a conta
         if pago == 'menor':
-            udp.sendto(b'O valor nao e suficiente para pagar a conta', clientADDR)
+            resposta = 'O valor nao e suficiente para pagar a conta'
+            udp.sendto(resposta.encode(), clientADDR)
         elif pago == 'pago':
-            udp.sendto(b'Voce pagou sua conta, obrigado!')
+            resposta = 'Voce pagou sua conta, obrigado!'
+            udp.sendto(resposta.encode(), clientADDR)
         else: #quando o valor for maior que o da conta
-            pago = f'Voce está pagando {pago.encode()} a mais que a sua conta. O valor excedente será distribuído para os outros clientes'
-            udp.sendto(pago, clientADDR)
+            pago = f'Voce está pagando {pago} a mais que a sua conta. O valor excedente será distribuído para os outros clientes'
+            udp.sendto(pago.encode(), clientADDR)
 
     if dados.decode() == '6' or dados.decode().capitalize() == 'Levantar':
         if cliente.status_conta:

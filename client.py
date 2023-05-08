@@ -37,6 +37,9 @@ while(msg != '\x18') and not encerrado:
         for i in range(int(tam_cardapio.decode())):
             item, serverADDR = udp.recvfrom(1024)
             print(item.decode())
+        msg = input("[Cliente]: ")
+        udp.sendto(msg.encode(), dest)
+
         #num_pkt, serverADDR = udp.recvfrom(1024)
         # if(num_pkt != b'file end'):
         #     print("Pacote nº: ", num_pkt.decode())
@@ -50,23 +53,31 @@ while(msg != '\x18') and not encerrado:
         print(f"[CINtofome]: {dados.decode()}")
         msg = input("[Cliente]: ")
         udp.sendto(msg.encode(), dest)
+        
 
     if msg == '3' or msg.capitalize() == 'Conta individual':
         dados, serverADDR = udp.recvfrom(1024)
         print(f"[CINtofome]: {dados.decode()}")
+        msg = input("[Cliente]: ")
+        udp.sendto(msg.encode(), dest)
+
 
     if msg == '4' or msg.capitalize() == 'Conta da mesa':
         tam_mesa, serverADDR = udp.recvfrom(1024)
-        for i in int(tam_mesa.decode()):
+        for i in range(int(tam_mesa.decode())+1):
             contas, serverADDR = udp.recvfrom(1024)
-            print(contas)
+            print(contas.decode())
         msg = input("[Cliente]: ")
         udp.sendto(msg.encode(), dest)
 
     if msg == '5' or msg.capitalize() == 'Pagar':
-        dados, serverADDR = udp.recvfrom(1024)
-        msg = input("[Cliente]: ")
+        dados, serverADDR = udp.recvfrom(1024) #recebe o valor da conta
+        print(f"[CINtofome]: {dados.decode()}")
+        msg = input("[Cliente]: ") #digita o quanto quer pagar
         udp.sendto(msg.encode(), dest)
+        dados, serverADDR = udp.recvfrom(1024) #recebe se o valor está correto
+        print(f"[CINtofome]: {dados.decode()}")
+        
 
     if msg == '6' or msg.capitalize() == 'Levantar':
         dados, serverADDR = udp.recvfrom(1024)
