@@ -28,20 +28,20 @@ dados_decodados = ''
 # ESTADO 0 (fazer os estados usando funções?)
 #def Standby():
 while(dados_decodados.capitalize() != "Chefia"):
-    dados, clientADDR = udp.recvfrom(1024)
-    dados_decodados = dados.decode()
+    dados, clientADDR = udp.recvfrom(1024) 
+    dados_decodados = dados.decode() #
 
     if(dados_decodados.capitalize() == "Chefia"):
         mesa_print = 'Digite sua mesa:'
         udp.sendto(mesa_print.encode(), clientADDR)
-        cliente_mesa, clientADDR = udp.recvfrom(1024)
+        cliente_mesa, clientADDR = udp.recvfrom(1024) #recebe a mesa
         nome_print = 'Digite seu nome'
         udp.sendto(nome_print.encode(), clientADDR)
-        cliente_nome, clientADDR = udp.recvfrom(1024)
+        cliente_nome, clientADDR = udp.recvfrom(1024) #recebe nome
         opcao_print = 'Digite uma das opcoes'
-        udp.sendto(opcao_print.encode(), clientADDR)
-        cliente = Consumidor(cliente_nome, cliente_mesa, clientADDR, 3000) #testando a porta 
-        clientes[cliente_nome] = cliente 
+        udp.sendto(opcao_print.encode(), clientADDR) #recebe a primeira ação do cliente
+        cliente = Consumidor(cliente_nome, cliente_mesa, clientADDR, 3000) #registra o cliente na classe
+        clientes[cliente_nome] = cliente #registra o cliente no dicionario de clientes
 
         if(cliente_mesa in mesas):
             mesas[cliente_mesa].append(cliente) #se a mesa já tiver no dicionário, adiciono esse novo cliente à lista de clientes
@@ -71,10 +71,10 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
         #file = open("servidor\cardapio.txt", "rb") # < mudar o nome da variável para 'cardapio' msm?
         #file = open("servidor\bigFile_teste.txt", "rb")
         tam_cardapio = str(len(cardapio.items()))
-        udp.sendto(tam_cardapio.encode(), clientADDR)
-        for chave, valor in cardapio.items():
+        udp.sendto(tam_cardapio.encode(), clientADDR) #envia o tamanho do cardapio para o cliente fazer o laço de recebimentos
+        for chave, valor in cardapio.items(): 
                 item = f"{chave} => R$ {valor}\n"
-                udp.sendto(item.encode(), clientADDR)
+                udp.sendto(item.encode(), clientADDR) #envia cada item do cardapio para o cliente para ser impresso
 
 
         #for i in range(num_pkts): # loop para envio de pacotes
@@ -91,17 +91,17 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
 
     if(dados.decode() == "2" or dados.decode().capitalize() == "Pedido"):
         udp.sendto(b'Digite qual o item que voce gostaria', clientADDR)
-        cliente_pedido, clientADDR = udp.recvfrom(1024)
-        cliente.registrar_pedido(cliente_pedido.decode(), cardapio[cliente_pedido.decode()]) 
+        cliente_pedido, clientADDR = udp.recvfrom(1024) #recebe pedido
+        cliente.registrar_pedido(cliente_pedido.decode(), cardapio[cliente_pedido.decode()]) #pedido do cliente é registrado
 
     if (dados.decode() == '3' or dados.decode().capitalize() == 'Conta individual'):
-        udp.sendto(cliente.get_conta_individual().encode(), clientADDR)
+        udp.sendto(cliente.get_conta_individual().encode(), clientADDR) #envia a conta individual
 
     if dados.decode() == '4' or dados.decode().capitalize() == 'Conta da mesa':
         total_mesa_pagar = 0 #variável pra ir somando o custo dos clientes
 
         clientes_mesa = mesas[cliente.mesa] #aqui pegamos a lista de clientes da mesa em que o usuário está
-        tam_mesa = str(len(cliente_mesa)) 
+        tam_mesa = str(len(cliente_mesa)) #tamanho do cardapio para o cliente fazer o laço de recebimentos
         udp.sendto(tam_mesa.encode(), clientADDR)
         
         for consumidor in clientes_mesa: #percorremos essa lista. Consumidor vai ser a variável que vai armazenar cada objeto cliente dessa lista
@@ -115,20 +115,20 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
     if (dados.decode() == '5' or dados.decode().capitalize() == 'Pagar'):
         conta = f'Sua conta foi {int(cliente.custo)}. Digite o valor a ser pago' 
         udp.sendto(conta.encode(), clientADDR) # manda o valor a ser pago
-        valor, clientADDR = udp.recvfrom(1024) #recebe o valor
+        valor, clientADDR = udp.recvfrom(1024) #recebe o valor que o cliente deseja pagar
         pago = cliente.pagar_conta(int(valor.decode())) #faz o calculo do valor pago com a conta
         if pago == 'menor':
             resposta = 'O valor nao e suficiente para pagar a conta'
-            udp.sendto(resposta.encode(), clientADDR)
+            udp.sendto(resposta.encode(), clientADDR) #o cliente ainda não pode levantar
         elif pago == 'pago':
             resposta = 'Voce pagou sua conta, obrigado!'
-            udp.sendto(resposta.encode(), clientADDR)
+            udp.sendto(resposta.encode(), clientADDR) #altera o status do cliente para que possa levantar
         else: #quando o valor for maior que o da conta
             pago = f'Voce está pagando {pago} a mais que a sua conta. O valor excedente será distribuído para os outros clientes'
-            udp.sendto(pago.encode(), clientADDR)
+            udp.sendto(pago.encode(), clientADDR) 
 
     if dados.decode() == '6' or dados.decode().capitalize() == 'Levantar':
-        if cliente.status_conta:
+        if cliente.status_conta: #checa se o cliente pagou 
             udp.sendto(b'Volte sempre!', clientADDR)
         else:
             udp.sendto(b'Voce ainda nao pagou sua conta', clientADDR)
