@@ -11,7 +11,6 @@ dest = (DEST_HOST, DEST_PORT)
 ORGN_HOST = "localhost"  # < endereço IP do cliente (127.0.0.1 é o padrão)
 ORGN_PORT = 3000         # < porta do cliente
 orgn = (ORGN_HOST, ORGN_PORT)
-#info = ORGN_HOST + ' ' + str(ORGN_PORT)
 
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp.bind(orgn)
@@ -40,27 +39,17 @@ while(msg != '\x18') and not encerrado:
         msg = input("[Cliente]: ")
         udp.sendto(msg.encode(), dest)
 
-        #num_pkt, serverADDR = udp.recvfrom(1024)
-        # if(num_pkt != b'file end'):
-        #     print("Pacote nº: ", num_pkt.decode())
-        #     dados, serverADDR = udp.recvfrom(1024)
-        #     print(dados.decode())
-        # else:
-        #     fileEnd = True
-
     if msg == '2' or msg.capitalize() == 'Pedido':
         dados, serverADDR = udp.recvfrom(1024)
         print(f"[CINtofome]: {dados.decode()}") 
         msg = input("[Cliente]: ")
         udp.sendto(msg.encode(), dest) #envia o pedido
         
-
     if msg == '3' or msg.capitalize() == 'Conta individual':
         dados, serverADDR = udp.recvfrom(1024)
         print(f"[CINtofome]: {dados.decode()}") #printa a conta recebida do server
         msg = input("[Cliente]: ")
         udp.sendto(msg.encode(), dest)
-
 
     if msg == '4' or msg.capitalize() == 'Conta da mesa':
         tam_mesa, serverADDR = udp.recvfrom(1024)
@@ -75,7 +64,6 @@ while(msg != '\x18') and not encerrado:
         udp.sendto(msg.encode(), dest)
         dados, serverADDR = udp.recvfrom(1024) #recebe se o valor está correto
         print(f"[CINtofome]: {dados.decode()}")
-        
 
     if msg == '6' or msg.capitalize() == 'Levantar':
         dados, serverADDR = udp.recvfrom(1024) #

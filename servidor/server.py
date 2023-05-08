@@ -20,13 +20,11 @@ cardapio = {"arroz":5.00, "feijão":2.00, "batata":10.00}
 
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp.bind(orgn)
-# Ainda tecnicamente precisa fazer os passos iniciais da criação
-# da conexão via UDP, do cliente pedindo para criar uma conexão com o server
+
 print("Servidor: Stand by\n")
 
 dados_decodados = ''
-# ESTADO 0 (fazer os estados usando funções?)
-#def Standby():
+
 while(dados_decodados.capitalize() != "Chefia"):
     dados, clientADDR = udp.recvfrom(1024) 
     dados_decodados = dados.decode() #
@@ -51,43 +49,18 @@ while(dados_decodados.capitalize() != "Chefia"):
             lista_clientes.append(cliente) #adicionamos o cliente a lista
             mesas[cliente_mesa] = lista_clientes #adicionamos a nova mesa no dic
        
-        
-        # [agora aqui precisaria adicionar as info coletadas no arquivo json]
         print("Servidor: On\n")
 
-# ESTADO 1 (fazer os estados usando funções?)
-#def Main():
-while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida paga (ou talvez quando o número de cliente for 0?)
+while(dados != b'\x18'):
     dados, clientADDR = udp.recvfrom(1024) # < tamanho do buffer é de 1024 bytes
     print(clientADDR, dados.decode()) # < o .decode() transforma o arquivo em bits em string
-    # [adicionar condicional para saber se o clientADDR é do socket atual ou não]
+
     if(dados.decode() == "1" or dados.decode().capitalize() == "Cardapio"):
-        # v método para achar o tamanho em bytes do arquivo
-        #fileSize = os.stat("servidor\cardapio.txt").st_size
-        #print(f"Size: {fileSize} bytes")
-        # v definindo o número de pacotes que deverão ser enviados
-        #num_pkts = ceil(fileSize/1024)
-        # v abrindo arquivo escolhido
-        #file = open("servidor\cardapio.txt", "rb") # < mudar o nome da variável para 'cardapio' msm?
-        #file = open("servidor\bigFile_teste.txt", "rb")
         tam_cardapio = str(len(cardapio.items()))
         udp.sendto(tam_cardapio.encode(), clientADDR) #envia o tamanho do cardapio para o cliente fazer o laço de recebimentos
         for chave, valor in cardapio.items(): 
                 item = f"{chave} => R$ {valor}\n"
                 udp.sendto(item.encode(), clientADDR) #envia cada item do cardapio para o cliente para ser impresso
-
-
-        #for i in range(num_pkts): # loop para envio de pacotes
-            #udp.sendto((str(i)).encode(), clientADDR) # < usado só para testes, diz qual o nº do pacote 
-            #udp.sendto(file.read(1024), clientADDR)   
-            # ^ ao usar o método .read(), a própria posição do cursor no arquivo 
-            # mudará automaticamente para a posição pertencente ao 1025º byte
-            # e assim segue, de 1024 bytes por 1024 bytes
-            # Obs.: Se você pedir para o código ler uma quant de bytes 
-            # maior do que resta, não vai dar erro nenhum
-        #udp.sendto('file end'.encode(), clientADDR)
-        # ^ é correto usar isso para sinalizar que o arquivo chegou ao seu fim?
-        #file.close() # < fechando arquivo
 
     if(dados.decode() == "2" or dados.decode().capitalize() == "Pedido"):
         udp.sendto(b'Digite qual o item que voce gostaria', clientADDR)
@@ -110,7 +83,6 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
 
         total = (f"Total da mesa - R$ {total_mesa_pagar}") #printamos o valor total
         udp.sendto(total.encode(), clientADDR) 
-            
 
     if (dados.decode() == '5' or dados.decode().capitalize() == 'Pagar'):
         conta = f'Sua conta foi {int(cliente.custo)}. Digite o valor a ser pago' 
@@ -133,7 +105,6 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
         else:
             udp.sendto(b'Voce ainda nao pagou sua conta', clientADDR)
 
-# v o ideal seria botar essas duas linhas assim que o cliente se levantasse da mesa (no loop)
 print("\nServidor: Off\n")
 udp.close() # < num cenário real, não deve ser fechado o do servidor por comando 
 # do cliente, mas se a conexão udp não for fechada, vc precisa ir no 
