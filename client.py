@@ -82,11 +82,9 @@ while(msg != '\x18') and not encerrado:
     if msg == '6' or msg.capitalize() == 'Levantar':
         dados, serverADDR = udp.recvfrom(1024) #
         print(f"[CINtofome]: {dados.decode()}")
-        if dados.decode() == 'Voce ainda nao pagou sua conta':
-            msg = input("[Cliente]: ")
-            udp.sendto(msg.encode(), dest)
-        else:
+        if dados.decode() == 'Volte sempre!':
             encerrado = True #encerra a comunicação
+            
 
 print("\nCliente: Off\n")
 udp.close()
