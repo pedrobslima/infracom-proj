@@ -101,7 +101,7 @@ while(dados != b'\x18'): # < adicionar parte de "Levantar da mesa" e da comida p
         total_mesa_pagar = 0 #variável pra ir somando o custo dos clientes
 
         clientes_mesa = mesas[cliente.mesa] #aqui pegamos a lista de clientes da mesa em que o usuário está
-        tam_mesa = str(len(cliente_mesa))
+        tam_mesa = str(len(cliente_mesa)) 
         udp.sendto(tam_mesa.encode(), clientADDR)
         
         for consumidor in clientes_mesa: #percorremos essa lista. Consumidor vai ser a variável que vai armazenar cada objeto cliente dessa lista
