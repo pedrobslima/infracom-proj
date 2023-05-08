@@ -67,8 +67,6 @@ while(msg != '\x18') and not encerrado:
         for i in range(int(tam_mesa.decode())+1): #faz um laço de acordo com o tamanho da mesa que foi recebido
             contas, serverADDR = udp.recvfrom(1024)
             print(contas.decode()) #printa a conta de cada cliente da mesa
-        msg = input("[Cliente]: ")
-        udp.sendto(msg.encode(), dest)
 
     if msg == '5' or msg.capitalize() == 'Pagar':
         dados, serverADDR = udp.recvfrom(1024) #recebe o valor da conta
